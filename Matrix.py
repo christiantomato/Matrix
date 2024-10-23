@@ -1,22 +1,29 @@
-#identity matrix
+class Matrix:
+    def __init__(self, rows, columns):
+        self.rows = rows
+        self.columns = columns
 
-rows = 5
-columns = 5
+        #the matrix attribute of the class
+        self.matrix = matrix = []
 
-matrix = []
+        # initialize the size of matrix
+        for i in range(rows):
+            row = [0] * columns
+            matrix.append(row)
 
-#intialize the size of matrix
-for i in range(rows):
-    row = [0] * columns
-    matrix.append(row)
+        # assign values to the identity
+        for i in range(rows):
+            for j in range(columns):
+                if i == j:
+                    matrix[i][j] = 1
 
-#assign values to the identity
-for i in range(rows):
-    for j in range(columns):
-       if i == j:
-           matrix[i][j] = 1
+    def __str__(self):
+        #string representation of the matrix
+        string = ""
+        for i in range(self.rows):
+            string += str(self.matrix[i])
+            string += "\n"
 
-#print the matrix
-for i in range(rows):
-    print(matrix[i])
+        return string
+
 
