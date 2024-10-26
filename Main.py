@@ -27,11 +27,17 @@ def make_matrix():
 def main():
 
     my_matrix = make_matrix()
-    my_identity_matrix = IdentityMatrix(5)
+    #my_identity_matrix = IdentityMatrix(5)
     print("\nyour matrix: ", my_matrix)
     print("is it row reduced?: ", my_matrix.is_row_reduced())
-    print("\nyour identity matrix: ", my_identity_matrix)
-    print("row reduced for identity is always: ", my_identity_matrix.is_row_reduced())
+
+    my_matrix.row_reduce()
+
+    print("\nrow reduced: ", my_matrix)
+    #print("\nyour identity matrix: ", my_identity_matrix)
+    #print("row reduced for identity is always: ", my_identity_matrix.is_row_reduced())
+
+
 
 #run
 main()

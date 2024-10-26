@@ -23,7 +23,3 @@ class IdentityMatrix(Matrix):
             for j in range(self.size):
                 if i == j:
                     matrix[i][j] = 1
-
-
-
-
