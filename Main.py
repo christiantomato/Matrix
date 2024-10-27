@@ -32,8 +32,8 @@ def main():
     print("is it row reduced?: ", my_matrix.is_row_reduced())
 
     my_matrix.row_reduce()
-
     print("\nrow reduced: ", my_matrix)
+
     #print("\nyour identity matrix: ", my_identity_matrix)
     #print("row reduced for identity is always: ", my_identity_matrix.is_row_reduced())
 
