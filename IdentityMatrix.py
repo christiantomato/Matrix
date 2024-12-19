@@ -2,24 +2,22 @@ from Matrix import *
 
 class IdentityMatrix(Matrix):
 
-    #define a new constructor, all we need is size of identity
+    #define a new constructor, since all we need is the size of the identity matrix
     def __init__(self, size):
-        #dimension of the identity matrix
-        self.size = size
 
-        #size is equal to rows and columns
-        self.rows = self.columns = self.size
+        #create the list of entries for the identity (one's down the diagonal)
+        entries = []
 
-        # the 2D array, or matrix, attribute of the class
-        self.matrix = matrix = []
-
-        # initialize the size of matrix
-        for i in range(self.size):
-            row = [0] * self.size
-            matrix.append(row)
-
-        #assign values to make it an identity
-        for i in range(self.size):
-            for j in range(self.size):
+        for i in range(size):
+            for j in range(size):
                 if i == j:
-                    matrix[i][j] = 1
+                    #if on a diagonal, assign 1's
+                    entries.append(1)
+                else:
+                    #assign 0's
+                    entries.append(0)
+
+        #finally, call to super
+        #note rows and columns are same length
+        super().__init__(size, size, entries)
+
