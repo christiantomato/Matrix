@@ -2,16 +2,24 @@ import math
 
 class Matrix:
 
-    #the parameters to pass in for custom matrix
-    def __init__(self, rows, columns, entries):
-        self.rows = rows
-        self.columns = columns
+    #the parameters to pass in for a matrix
+    def __init__(self, num_rows, num_columns, entries):
+        self.rows = num_rows
+        self.columns = num_columns
+        #where entries is a list of the entries read from row to row
         self.entries = entries
+        #size for easy size comparisons and stuff (in form m x n)
+        self.size = [self.rows, self.columns]
+        #boolean describing whether matrix is square or not
+        self.square = (self.rows == self.columns)
+        #define dimension if square
+        if self.square:
+            self.dimension = self.rows
 
         #the 2D array, or matrix, attribute of the class
         self.matrix = matrix = []
 
-        # initialize the size of matrix
+        #initialize the size of matrix
         for i in range(self.rows):
             row = [0] * self.columns
             matrix.append(row)
@@ -24,7 +32,6 @@ class Matrix:
                 matrix[i][j] = entries[entry]
                 entry += 1
 
-
     #string representation of matrix
     def __str__(self):
         string = "\n"
@@ -34,12 +41,113 @@ class Matrix:
 
         return string
 
+    #defining equality between two matrices
+    def __eq__(self, other):
+        #check to make sure other is actually a matrix object
+        if isinstance(other, Matrix):
+            #check equality of each 2D array
+            return self.matrix == other.matrix
+        else:
+            #raise an exception
+            raise TypeError(other + "is not a Matrix")
 
-    #algorithm that creates zeroes below a leading entry
-    def row_reducing_algorithm(self, row_start):
+    #define matrix addition
+    def __add__(self, other):
+        #can only add together if they are both matrices
+        if isinstance(other, Matrix):
+            #check if they are both the same size
+            if self.size == other.size:
+                #then they are the same size, create new matrix with added entries
+                added_entries = []
+                #loop through all the entries and add them to other
+                for i in range(len(self.entries)):
+                    #add the entries
+                    added_entries.append(self.entries[i] + other.entries[i])
+                #return the new matrix
+                sum_matrix = Matrix(self.rows, self.columns, added_entries)
+                return sum_matrix
+            else:
+                #raise an exception
+                raise TypeError("Matrices are not the same size")
+        else:
+            #raise an exception
+            raise TypeError(other + "is not a Matrix")
+
+    #define matrix subtraction
+    def __sub__(self, other):
+        #can only add together if they are both matrices
+        if isinstance(other, Matrix):
+            #check if they are both the same size
+            if self.size == other.size:
+                #then they are the same size, create new matrix with subtracted entries
+                subtracted_entries = []
+                #loop through all the entries and subtract them from self
+                for i in range(len(self.entries)):
+                    #subtract the entries
+                    subtracted_entries.append(self.entries[i] - other.entries[i])
+                #return the new matrix
+                sub_matrix = Matrix(self.rows, self.columns, subtracted_entries)
+                return sub_matrix
+            else:
+                #raise an exception
+                raise TypeError("Matrices are not the same size")
+        else:
+            #raise an exception
+            raise TypeError(other + "is not a Matrix")
+
+    #define matrix multiplication
+    def __mul__(self, other):
+        #check other is a matrix object
+        if isinstance(other, Matrix):
+            #check if they can be multiplied (m x n * n x r = m x r)
+            if self.columns == other.rows:
+                #compute the dot product with each row and column, each ij entry of the new matrix is a dot product
+                multiplied_entries = []
+                dot_product = 0
+
+                #loop that will change between the left matrix row
+                for m in range(self.rows):
+                    #loop that will go through the right matrix columns
+                    for r in range(other.columns):
+                        #for loop that dots each corresponding entry
+                        for n in range(self.columns):
+                            #compute the dot
+                            dot_product += self.matrix[m][n] * other.matrix[n][r]
+
+                        #add the dot product to the entry array
+                        multiplied_entries.append(dot_product)
+                        #restart the dot product here before next dot iteration
+                        dot_product = 0
+
+                #finally, return the new matrix
+                mul_matrix = Matrix(self.rows, other.columns, multiplied_entries)
+                return mul_matrix
+
+    #define matrix powers
+    def __pow__(self, power, modulo=None):
+        #do a delayed import to get the identity
+        from IdentityMatrix import IdentityMatrix
+
+        #matrix powers only defined for square matrices
+        if self.square:
+            #compute the power, start with identity for corresponding size
+            result = IdentityMatrix(self.dimension)
+            for i in range(power):
+                result = result * self
+
+            return result
+
+    #algorithm that row reduces the matrix
+    def row_reduce(self):
 
         """
-        1. take a row, locate first nonzero entry
+        Example Matrix:
+
+        1 2 3
+        3 7 7
+        2 5 9
+
+        1. clear out under first column
         2. go through next row, locate entry that is directly below row
         3. scalar multiply each one by each other to yield same number
         4. negate the bottom row and add it to the top row
@@ -47,94 +155,43 @@ class Matrix:
         6. repeat the same process but this time use the next row to clear out below it.
         """
 
-        #variables:
-
-        #start with negative so we can determine when an index has actually been found
-        leading_entry_index = -1
-
-        #don't allow a below entry index to start, once a leading entry is found it will be set
-        below_entry_index = -1
-
-        #keep track of both rows as well
-        leading_entry_row = 0
-        below_entry_row = 0
-
-        #the actual entry values
-        leading_entry = 0
-        below_entry = 0
-
-        #this important variable determines which row is being used to clear out everything below it
-        row_clearer = row_start
-
-        #locate the leading entry and compare to all rows below it
-        while row_clearer < self.rows:
-            for j in range(self.columns):
-
-                #if it is a nonzero entry
-                if self.matrix[row_clearer][j] != 0:
-                    #if a leading entry has been set, now we search for below entry
-                    if leading_entry_index >= 0:
-                        # assign the below entry value, index, and row (row+1 since "i" is the index)
-                        below_entry = self.matrix[row_clearer][j]
-                        below_entry_index = j
-                        below_entry_row = row_clearer + 1
-
-                        # now check if they are actually in the same column
-                        if leading_entry_index == below_entry_index:
-                            # do row addition here to get zeros below
-                            # remember to scale each row by the other rows entry, and negate a row to get 0
-                            self.scale_add_rows(leading_entry, below_entry_row, -1*below_entry, leading_entry_row)
-                            #simplify the rows after addition? (this is implemented in the functions already)
-
-                        else:
-                            # if not, then go to next row and check there
-                            break
-
-                    #if we haven't found an initial leading entry yet
-                    elif below_entry_index < 0:
-                        # assign the leading entry value, index, (and row+1 since "i" is the index)
-                        leading_entry = self.matrix[row_clearer][j]
-                        leading_entry_index = j
-                        leading_entry_row = row_clearer + 1
-                        # break, go to next row, and start looking for the entry directly below
-                        break
-            #increment to next row
-            row_clearer += 1
-
-
-    def row_reduce(self):
-        #use the row reducing algorithm paired with the row reduce check to continue row reducing
-        #do the algorithm for every row and it should reduce
-        for i in range(self.rows):
-            self.row_reducing_algorithm(i)
-        #now simplify each row if possible
-        for i in range(self.rows):
-            #i + 1 because the function takes in actual row number and not index
-            self.simplify(i+1)
-
-
+        #locate
 
     #function to check if row reduced
     def is_row_reduced(self):
+        #boolean variables for different row reduced forms - start as true, change if found false
+        reduced_form = True
+        echelon_form = True
+
         #sentinel value as -1 to start, since we are checking if the leading entry is less than current column number
         leading_entry_index = -1
 
-        #check for leading entry position of each row and compare it to next
+        #find the leading entry position of each row and compare it to leading entry of the next row
         for i in range(self.rows):
             for j in range(self.columns):
                 #if it is a nonzero entry
                 if self.matrix[i][j] != 0:
                     #if the nonzero entry is further right than previous nonzero entry
                     if j > leading_entry_index:
-                        #meeting row reduced requirements, set new leading entry, go to next row
+                        #meets row reduced requirements, set the leading entry
                         leading_entry_index = j
+                        #check for zeroes up above leading entry
+                        #start at previous row, go back up each row at a time, make sure not to go past row index 0.
+                        for x in range(i-1, -1, -1):
+                            #if any of the above entries are not zero
+                            if self.matrix[x][j] != 0:
+                                #not meeting row echelon requirements
+                                echelon_form = False
+                        #move onto next row if everything is successful
                         break
                     else:
-                        #not row reduced, finish function
-                        return False
+                        #not row reduced (so not echelon either), then we can finish
+                        reduced_form = False
+                        echelon_form = False
+                        return "Row Reduced Form: %s, Row Echelon Form: %s" % (reduced_form, echelon_form)
 
-        #return true if it is found that it isn't false
-        return True
+        #return the form that it is in
+        return "row reduced: %s, echelon form: %s" % (reduced_form, echelon_form)
 
     #function to simplify a row
     def simplify(self, row):
